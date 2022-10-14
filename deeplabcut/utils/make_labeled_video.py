@@ -735,7 +735,7 @@ def proc_video(
                 return
 
             if all(individuals):
-                df = df.loc(axis=1)[:, individuals]
+                df = df.loc(axis=1)[:, individuals]            
             cropping = metadata["data"]["cropping"]
             [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
             labeled_bpts = [
