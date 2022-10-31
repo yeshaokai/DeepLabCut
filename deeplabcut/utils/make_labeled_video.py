@@ -704,6 +704,11 @@ def proc_video(
         DLCscorer = "DLC_" + Path(init_weights).stem
         DLCscorerlegacy = "DLC_" + Path(init_weights).stem
 
+    if init_weights!="":
+        DLCscorer = 'DLC_' + Path(init_weights).stem
+        DLCscorerlegacy = 'DLC_' + Path(init_weights).stem        
+
+    
     if filtered:
         videooutname1 = os.path.join(vname + DLCscorer + "filtered_labeled.mp4")
         videooutname2 = os.path.join(vname + DLCscorerlegacy + "filtered_labeled.mp4")
