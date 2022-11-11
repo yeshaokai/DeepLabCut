@@ -172,6 +172,7 @@ def CreateVideo(
                         )
                         image[rr, cc] = color_for_skeleton
 
+
             for ind, num_bp, num_ind in bpts2color:
                 if df_likelihood[ind, index] > pcutoff:
                     if color_by == "bodypart":
