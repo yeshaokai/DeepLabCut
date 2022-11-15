@@ -71,6 +71,7 @@ def video_inference_superanimal(
     """
 
     for video in videos:
+
         vname = Path(video).stem
         modelfolder = superanimal_name + "_" + vname + "_weights"
         adapter = SpatiotemporalAdaptation(
