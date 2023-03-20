@@ -123,3 +123,4 @@ scale_jitter_up: 1.25
 sharpen: false
 sharpenratio: 0.3
 weigh_only_present_joints: false
+gradient_masking: true
