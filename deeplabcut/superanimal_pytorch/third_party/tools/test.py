@@ -88,8 +88,9 @@ def merge_configs(cfg1, cfg2):
     return cfg1
 
 
-def main():
-    args = parse_args()
+def main(args = None):
+    if not args:
+        args = parse_args()
 
     print(args.config)
     cfg = Config.fromfile(args.config)

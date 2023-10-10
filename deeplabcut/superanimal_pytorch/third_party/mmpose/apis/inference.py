@@ -18,8 +18,18 @@ from mmpose.utils.hooks import OutputHook
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+def merge_configs(cfg1, cfg2):
+    # Merge cfg2 into cfg1
+    # Overwrite cfg1 if repeated, ignore if value is None.
+    cfg1 = {} if cfg1 is None else cfg1.copy()
+    cfg2 = {} if cfg2 is None else cfg2
+    for k, v in cfg2.items():
+        if v:
+            cfg1[k] = v
+    return cfg1
 
-def init_pose_model(config, checkpoint=None, device="cuda:0"):
+
+def init_pose_model(config, checkpoint=None, device="cuda:0", cfg_options = None):
     """Initialize a pose model from config file.
 
     Args:
@@ -33,12 +43,19 @@ def init_pose_model(config, checkpoint=None, device="cuda:0"):
     """
     if isinstance(config, str):
         config = mmcv.Config.fromfile(config)
+    if cfg_options:
+        print ('trying to merge?')
+        config.merge_from_dict(cfg_options)
+    
     elif not isinstance(config, mmcv.Config):
         raise TypeError(
             "config must be a filename or Config object, " f"but got {type(config)}"
         )
     config.model.pretrained = None
+    print ('final config before inference', config['kpts_num'])
+    print ('check config model', config.model)
     model = build_posenet(config.model)
+
     if checkpoint is not None:
         # load model checkpoint
         load_checkpoint(model, checkpoint, map_location="cpu")
@@ -529,7 +546,8 @@ def _inference_single_pose_model(
             return_loss=False,
             return_heatmap=return_heatmap,
         )
-
+    
+        
     return result["preds"], result["output_heatmap"]
 
 

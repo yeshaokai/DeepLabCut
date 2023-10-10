@@ -410,6 +410,7 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
             gt_keypoints[..., 2] = 1
             gts[image_id].append(
                 {
+                    "image_path": image_path,
                     "keypoints": gt_keypoints,
                     "center": _gt["center"],
                     "image_id": image_id,
@@ -432,11 +433,8 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
 
                 _pred_keypoints = preds[i]
 
-                bbox = []
-
-                if domain_adaptation or memory_replay:
-                    bbox = gts[image_id][i]
-
+                bbox = boxes[i]
+                    
                 kpts[image_id].append(
                     {
                         "image_path": image_paths[i],
@@ -544,6 +542,8 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
 
             result = [
                 {
+                    "shaokai_bbox": img_kpt["bbox"],
+                    "image_path": img_kpt["image_path"],
                     "image_id": img_kpt["image_id"],
                     "category_id": cat_id,
                     "keypoints": key_point.tolist(),

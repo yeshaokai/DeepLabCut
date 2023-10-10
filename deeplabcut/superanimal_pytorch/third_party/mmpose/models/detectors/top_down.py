@@ -11,7 +11,7 @@ from mmpose.core import imshow_bboxes, imshow_keypoints
 from .. import builder
 from ..builder import POSENETS
 from .base import BasePose
-
+import torch
 try:
     from mmcv.runner import auto_fp16
 except ImportError:
@@ -45,6 +45,8 @@ class TopDown(BasePose):
         test_cfg=None,
         pretrained=None,
         loss_pose=None,
+        self_pacing = False,
+        pseudo_threshold = 0.7
     ):
         super().__init__()
         self.fp16_enabled = False
@@ -53,7 +55,8 @@ class TopDown(BasePose):
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
-
+        self.self_pacing = self_pacing
+        self.pseudo_threshold = pseudo_threshold
         if neck is not None:
             self.neck = builder.build_neck(neck)
 
@@ -161,6 +164,30 @@ class TopDown(BasePose):
 
         # if return loss
         losses = dict()
+
+        if self.self_pacing:
+
+            with torch.no_grad():
+                batch_size, _, img_height, img_width = img.shape
+                keypoint_result = self.keypoint_head.decode(
+                    img_metas, output['original'].cpu().numpy(), img_size=[img_width, img_height]
+                )
+
+                preds = keypoint_result['preds']
+                confidence_mask = preds[..., -1] < self.pseudo_threshold
+
+                target_weight[confidence_mask] = 0
+
+            keypoint_losses = self.keypoint_head.get_loss(output, output['original'], target_weight)
+
+            
+            losses.update(keypoint_losses)
+            keypoint_accuracy = self.keypoint_head.get_accuracy(
+                original_output, target, target_weight
+            )
+            losses.update(keypoint_accuracy)
+            return losses
+            
         if self.with_keypoint:
             keypoint_losses = self.keypoint_head.get_loss(output, target, target_weight)
 

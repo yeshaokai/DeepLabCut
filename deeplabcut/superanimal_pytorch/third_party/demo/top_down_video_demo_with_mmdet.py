@@ -211,32 +211,37 @@ def main():
         person_results = process_mmdet_results(mmdet_results, args.det_cat_id)
 
         # test a single image, with a list of bboxes.
+        if len(person_results) > 0:
+        
+            bbox = person_results[0]["bbox"][:4]
+            bbox = median_filter_instance.update(bbox)
+            person_results[0]["bbox"][:4] = bbox
 
-        bbox = person_results[0]["bbox"][:4]
-        bbox = median_filter_instance.update(bbox)
-        person_results[0]["bbox"][:4] = bbox
+            pose_results, returned_outputs = inference_top_down_pose_model(
+                pose_model,
+                img,
+                person_results,
+                bbox_thr=args.bbox_thr,
+                format="xyxy",
+                dataset=dataset,
+                dataset_info=dataset_info,
+                return_heatmap=return_heatmap,
+                outputs=output_layer_names,
+            )
+            end = time.time()
 
-        pose_results, returned_outputs = inference_top_down_pose_model(
-            pose_model,
-            img,
-            person_results,
-            bbox_thr=args.bbox_thr,
-            format="xyxy",
-            dataset=dataset,
-            dataset_info=dataset_info,
-            return_heatmap=return_heatmap,
-            outputs=output_layer_names,
-        )
-        end = time.time()
+            if args.kpt_median_filter:
+                kpts = pose_results[0]["keypoints"]
+                kpts = kpt_median_filter_instance.update(kpts)
+                pose_results[0]["keypoints"][:, :2] = kpts
 
-        if args.kpt_median_filter:
-            kpts = pose_results[0]["keypoints"]
-            kpts = kpt_median_filter_instance.update(kpts)
-            pose_results[0]["keypoints"][:, :2] = kpts
+            time_accumulated += end - start
 
-        time_accumulated += end - start
-
-        ret[frame_id] = pose_results
+            ret[frame_id] = pose_results
+        else:
+            print ('no object detected')
+            pose_results = []
+            ret[frame_id] = pose_results
         frame_id += 1
 
         # show the results

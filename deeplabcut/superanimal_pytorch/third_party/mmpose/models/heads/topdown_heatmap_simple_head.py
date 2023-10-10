@@ -122,6 +122,7 @@ class TopdownHeatmapSimpleHead(TopdownHeatmapBaseHead):
         else:
             raise ValueError(f"num_deconv_layers ({num_deconv_layers}) should >= 0.")
 
+        
         if extra is not None and "final_conv_kernel" in extra:
             assert extra["final_conv_kernel"] in [0, 1, 3]
             if extra["final_conv_kernel"] == 3:
@@ -144,10 +145,10 @@ class TopdownHeatmapSimpleHead(TopdownHeatmapBaseHead):
             )
 
             layers = []
+
             if extra is not None:
                 num_conv_layers = extra.get("num_conv_layers", 0)
                 num_conv_kernels = extra.get("num_conv_kernels", [1] * num_conv_layers)
-
                 for i in range(num_conv_layers):
                     layers.append(
                         build_conv_layer(
@@ -238,6 +239,7 @@ class TopdownHeatmapSimpleHead(TopdownHeatmapBaseHead):
 
         features = self._transform_inputs(x)
 
+        
         if self.vit_neck:
             features = self.mlp_adaptor(features)
             features = rearrange(features, "b c (p1 p2) -> b c p1 p2", p1=64, p2=64)

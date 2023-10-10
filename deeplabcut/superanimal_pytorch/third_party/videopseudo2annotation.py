@@ -9,6 +9,8 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument("--video_result_path", type=str)
 parser.add_argument("--video_path", type=str)
+parser.add_argument("--out_root", type = str)
+parser.add_argument("--threshold", type = float, default = 0.3)
 
 args = parser.parse_args()
 
@@ -19,7 +21,7 @@ resultname = args.video_result_path.split("/")[-1].replace(".mp4.json", "")
 
 videopath = args.video_path
 
-root = os.path.join(os.path.dirname(args.video_result_path), f"annotation_{resultname}")
+root = args.out_root
 
 os.makedirs(root, exist_ok=True)
 
@@ -124,8 +126,10 @@ def result_2_train_test(img_root, result):
         for individual_data in data:
             keypoints = np.array(individual_data["keypoints"])
             num_kpts = len(keypoints)
+            low_confidence = keypoints[:,2] < args.threshold
             keypoints[:, 2] = 2
-
+            # -1 or 0?
+            keypoints[:, 2][low_confidence] = -1
             bbox = individual_data["bbox"]
             x, y, w, h = bbox[:4]
             area = w * h
