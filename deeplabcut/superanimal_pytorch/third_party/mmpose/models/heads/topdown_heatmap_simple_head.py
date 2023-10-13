@@ -87,7 +87,7 @@ class TopdownHeatmapSimpleHead(TopdownHeatmapBaseHead):
 
         if extra is not None and not isinstance(extra, dict):
             raise TypeError("extra should be dict or None.")
-
+        
         if self.vit_neck:
             if in_channels != out_channels:
                 # self.keypoints_adp = nn.Conv2d(in_channels, out_channels, (1, 1))

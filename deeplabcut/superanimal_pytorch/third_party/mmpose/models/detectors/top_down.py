@@ -175,6 +175,9 @@ class TopDown(BasePose):
 
                 preds = keypoint_result['preds']
                 confidence_mask = preds[..., -1] < self.pseudo_threshold
+                confidence_mask = torch.from_numpy(confidence_mask)
+                confidence_mask = confidence_mask.unsqueeze(-1)
+                print (torch.sum(confidence_mask), 'torch valid')
 
                 target_weight[confidence_mask] = 0
 

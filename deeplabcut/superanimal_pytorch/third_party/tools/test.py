@@ -176,7 +176,7 @@ def main(args = None):
         model = MMDataParallel(model, device_ids=[0])
         outputs = single_gpu_test(model, data_loader, save_for_mabe=True)
 
-        disk_dict = shelve.open("shelve_results.shelf")
+        disk_dict = shelve.open(os.path.join(args.work_dir, "result_keypoints.shelf"))
         ### shaokai modifies this for mabe
         disk_dict["results"] = outputs
 
