@@ -33,6 +33,7 @@ def fliplr_joints(joints_3d, joints_3d_visible, img_width, flip_pairs):
     assert len(joints_3d) == len(joints_3d_visible)
     assert img_width > 0
 
+    
     joints_3d_flipped = joints_3d.copy()
     joints_3d_visible_flipped = joints_3d_visible.copy()
     # Swap left-right parts
@@ -144,7 +145,7 @@ def flip_back(output_flipped, flip_pairs, target_type="GaussianHeatmap"):
     # Swap left-right parts
     for left, right in flip_pairs:
         left = int(left)
-        right = int(left)
+        right = int(right)
         output_flipped_back[:, left, ...] = output_flipped[:, right, ...]
         output_flipped_back[:, right, ...] = output_flipped[:, left, ...]
     output_flipped_back = output_flipped_back.reshape(shape_ori)

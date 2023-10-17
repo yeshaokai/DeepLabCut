@@ -271,6 +271,7 @@ class TopdownHeatmapSimpleHead(TopdownHeatmapBaseHead):
             output = output["original"]
 
         if flip_pairs is not None:
+            print ('using flip test')
             output_heatmap = flip_back(
                 output.detach().cpu().numpy(), flip_pairs, target_type=self.target_type
             )
