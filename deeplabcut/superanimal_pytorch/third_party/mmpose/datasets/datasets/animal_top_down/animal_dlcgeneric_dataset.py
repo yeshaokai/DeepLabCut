@@ -357,9 +357,9 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
         outputs,
         res_folder,
         metric="mAP",
-        skip_evaluation=False,
         domain_adaptation=False,
         memory_replay=False,
+        skip_evaluation = False,
         **kwargs,
     ):
         """Evaluate coco keypoint results. The pose prediction results will be
@@ -388,6 +388,8 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
         Returns:
             dict: Evaluation results for evaluation metric.
         """
+
+        
         metrics = metric if isinstance(metric, list) else [metric]
         allowed_metrics = ["mAP"]
         for metric in metrics:
@@ -396,6 +398,15 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
 
         res_file = os.path.join(res_folder, "result_keypoints.json")
 
+        if skip_evaluation:
+            info_str = self._do_python_keypoint_eval(res_file)
+            name_value = OrderedDict(info_str)
+            if memory_replay or domain_adaptation:
+                return valid_kpts
+            else:
+                return name_value
+
+        
         kpts = defaultdict(list)
         gts = defaultdict(list)
         _gts = self._get_db()

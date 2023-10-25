@@ -32,6 +32,7 @@ def parse_args():
     parser.add_argument("checkpoint", help="checkpoint file")
     parser.add_argument("--out", help="output result file")
     parser.add_argument("--work-dir", help="the dir to save evaluation results")
+    parser.add_argument("--skip_evaluation", action = 'store_true')
     parser.add_argument(
         "--fuse-conv-bn",
         action="store_true",
@@ -167,26 +168,26 @@ def main(args = None):
     fp16_cfg = cfg.get("fp16", None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)
-    load_checkpoint(model, args.checkpoint, map_location="cpu")
+        
+    if not args.skip_evaluation:
+        load_checkpoint(model, args.checkpoint, map_location="cpu")
 
     if args.fuse_conv_bn:
         model = fuse_conv_bn(model)
 
-    if not distributed:
-        model = MMDataParallel(model, device_ids=[0])
-        outputs = single_gpu_test(model, data_loader, save_for_mabe=True)
-
-        #disk_dict = shelve.open(os.path.join(args.work_dir, "result_keypoints.shelf"))
-        ### shaokai modifies this for mabe
-        #disk_dict["results"] = outputs
-
+    if not args.skip_evaluation:
+        if not distributed:
+            model = MMDataParallel(model, device_ids=[0])
+            outputs = single_gpu_test(model, data_loader, save_for_mabe=True)
+        else:
+            model = MMDistributedDataParallel(
+                model.cuda(),
+                device_ids=[torch.cuda.current_device()],
+                broadcast_buffers=False,
+            )
+            outputs = multi_gpu_test(model, data_loader, args.tmpdir, args.gpu_collect)
     else:
-        model = MMDistributedDataParallel(
-            model.cuda(),
-            device_ids=[torch.cuda.current_device()],
-            broadcast_buffers=False,
-        )
-        outputs = multi_gpu_test(model, data_loader, args.tmpdir, args.gpu_collect)
+        outputs = []
 
     rank, _ = get_dist_info()
     eval_config = cfg.get("evaluation", {})
@@ -199,6 +200,7 @@ def main(args = None):
             cfg.work_dir,
             memory_replay=args.memory_replay,
             domain_adaptation=args.domain_adaptation,
+            skip_evaluation = args.skip_evaluation,
             **eval_config,
         )
 
@@ -206,14 +208,14 @@ def main(args = None):
         if isinstance(results, dict):
             mmcv.dump(results, os.path.join(cfg.work_dir, "info_str.json"))
             print("results", results)
-
-        if args.out:
-            print(f"\nwriting results to {args.out}")
-            # import pickle
-            # with open(args.out, 'wb') as f:
-            #    pickle.dump(results, f)
-            print("results", results)
-            mmcv.dump(results, args.out)
+        if not args.skip_evaluation:
+            if args.out:
+                print(f"\nwriting results to {args.out}")
+                # import pickle
+                # with open(args.out, 'wb') as f:
+                #    pickle.dump(results, f)
+                print("results", results)
+                mmcv.dump(results, args.out)
 
 
 if __name__ == "__main__":

@@ -33,7 +33,8 @@ class HRModule(nn.Module):
         # Protect mutable default arguments
         norm_cfg = copy.deepcopy(norm_cfg)
         super().__init__()
-        self._check_branches(num_branches, num_blocks, in_channels, num_channels)
+        self._check_branches(num_branches, num_blocks,
+                             in_channels, num_channels)
 
         self.in_channels = in_channels
         self.num_branches = num_branches
@@ -87,7 +88,8 @@ class HRModule(nn.Module):
                     bias=False,
                 ),
                 build_norm_layer(
-                    self.norm_cfg, num_channels[branch_index] * get_expansion(block)
+                    self.norm_cfg, num_channels[branch_index] *
+                    get_expansion(block)
                 )[1],
             )
 
@@ -124,7 +126,8 @@ class HRModule(nn.Module):
         branches = []
 
         for i in range(num_branches):
-            branches.append(self._make_one_branch(i, block, num_blocks, num_channels))
+            branches.append(self._make_one_branch(
+                i, block, num_blocks, num_channels))
 
         return nn.ModuleList(branches)
 
@@ -178,7 +181,8 @@ class HRModule(nn.Module):
                                         padding=1,
                                         bias=False,
                                     ),
-                                    build_norm_layer(self.norm_cfg, in_channels[i])[1],
+                                    build_norm_layer(
+                                        self.norm_cfg, in_channels[i])[1],
                                 )
                             )
                         else:
@@ -193,7 +197,8 @@ class HRModule(nn.Module):
                                         padding=1,
                                         bias=False,
                                     ),
-                                    build_norm_layer(self.norm_cfg, in_channels[j])[1],
+                                    build_norm_layer(
+                                        self.norm_cfg, in_channels[j])[1],
                                     nn.ReLU(inplace=True),
                                 )
                             )
@@ -336,7 +341,8 @@ class HRNet(nn.Module):
 
         block = self.blocks_dict[block_type]
         stage1_out_channels = num_channels * get_expansion(block)
-        self.layer1 = self._make_layer(block, 64, stage1_out_channels, num_blocks)
+        self.layer1 = self._make_layer(
+            block, 64, stage1_out_channels, num_blocks)
 
         # stage 2
         self.stage2_cfg = self.extra["stage2"]
@@ -344,7 +350,8 @@ class HRNet(nn.Module):
         block_type = self.stage2_cfg["block"]
 
         block = self.blocks_dict[block_type]
-        num_channels = [channel * get_expansion(block) for channel in num_channels]
+        num_channels = [
+            channel * get_expansion(block) for channel in num_channels]
         self.transition1 = self._make_transition_layer(
             [stage1_out_channels], num_channels
         )
@@ -358,8 +365,10 @@ class HRNet(nn.Module):
         block_type = self.stage3_cfg["block"]
 
         block = self.blocks_dict[block_type]
-        num_channels = [channel * get_expansion(block) for channel in num_channels]
-        self.transition2 = self._make_transition_layer(pre_stage_channels, num_channels)
+        num_channels = [
+            channel * get_expansion(block) for channel in num_channels]
+        self.transition2 = self._make_transition_layer(
+            pre_stage_channels, num_channels)
         self.stage3, pre_stage_channels = self._make_stage(
             self.stage3_cfg, num_channels
         )
@@ -371,7 +380,8 @@ class HRNet(nn.Module):
             block_type = self.stage4_cfg["block"]
 
             block = self.blocks_dict[block_type]
-            num_channels = [channel * get_expansion(block) for channel in num_channels]
+            num_channels = [
+                channel * get_expansion(block) for channel in num_channels]
             self.transition3 = self._make_transition_layer(
                 pre_stage_channels, num_channels
             )
@@ -379,7 +389,8 @@ class HRNet(nn.Module):
             self.stage4, pre_stage_channels = self._make_stage(
                 self.stage4_cfg,
                 num_channels,
-                multiscale_output=self.stage4_cfg.get("multiscale_output", False),
+                multiscale_output=self.stage4_cfg.get(
+                    "multiscale_output", False),
             )
 
         self._freeze_stages()
