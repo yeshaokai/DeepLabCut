@@ -19,6 +19,7 @@ dlc_path = os.path.dirname(deeplabcut.__file__)
 root = os.path.join(dlc_path, "superanimal_pytorch")
 sys.path.append(os.path.join(root, 'third_party'))
 
+
 from mmpose.apis import (inference_top_down_pose_model, init_pose_model,
                          process_mmdet_results, vis_pose_result)
 from mmpose.datasets import DatasetInfo
@@ -147,17 +148,7 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-    
-    '''
-    relative_root = '/mnt/md0/shaokai/integration/DeepLabCut/deeplabcut/superanimal_pytorch/third_party/'
-    det_model_name = 'superquadruped_faster_rcnn'
-    pose_model_name = 'superquadruped_hrnetw32'
-    det_checkpoint = '/mnt/md0/shaokai/mmdetection/work_dirs/faster_rcnn_r50_fpn_1x_quadruped/epoch_80.pth'
-    pose_checkpoint = os.path.join(relative_root, 'work_dirs/hrnet_w32_quadruped_256x256_splitD/latest.pth')
-    device = 'cuda'
-    image_paths = ['/mnt/md0/shaokai/many_dogs.jpeg']
-    '''
-        
+            
     inference_obj = SuperAnimalPytorchInference(args.det_model_name,
                                                 args.pose_model_name,
                                                 args.device)
