@@ -31,6 +31,43 @@ except (ImportError, ModuleNotFoundError) as e:
 import json
 
 
+class MedianFilter:
+    def __init__(self, window_size):
+        self.window_size = window_size
+        self.buffer = deque(maxlen=window_size)
+
+    def update(self, bbox):
+        self.buffer.append(bbox)
+        return self.compute_median()
+
+    def compute_median(self):
+        # Transpose to get separate arrays of x1, y1, x2, y2
+        transposed = np.transpose(self.buffer)
+        # Compute median for each coordinate
+        return [np.median(coordinate) for coordinate in transposed]
+
+
+class KeypointsMedianFilter:
+    def __init__(self, num_kpts, window_size):
+        self.window_size = window_size
+        self.num_kpts = num_kpts
+        # A buffer for each keypoint
+        self.buffers = [
+            [deque(maxlen=window_size) for _ in range(2)] for _ in range(num_kpts)
+        ]
+
+    def update(self, keypoints):
+        # Add new keypoints to buffers and compute new median keypoints
+        median_kpts = []
+        for i, (x, y, _) in enumerate(keypoints):
+            self.buffers[i][0].append(x)
+            self.buffers[i][1].append(y)
+            median_x = np.median(self.buffers[i][0])
+            median_y = np.median(self.buffers[i][1])
+            median_kpts.append((median_x, median_y))
+        return np.array(median_kpts)
+    
+
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
@@ -155,8 +192,11 @@ def main():
 
     time_accumulated = 0
     frame_count = 0
-    window_size = 5
+    window_size = 3
 
+    median_filter_instance = MedianFilter(window_size)
+    kpt_median_filter_instance = KeypointsMedianFilter(39, window_size)
+    
     import time
 
     while cap.isOpened():
@@ -168,9 +208,16 @@ def main():
         # test a single image, the resulting box is (x1, y1, x2, y2)
         start = time.time()
         mmdet_results = inference_detector(det_model, img)
+
         
         # keep the person class bounding boxes.
         person_results = process_mmdet_results(mmdet_results, args.det_cat_id)
+        
+        if args.kpt_median_filter:
+            if len(person_results) > 0:
+                bbox = person_results[0]["bbox"][:4]
+                bbox = median_filter_instance.update(bbox)
+                person_results[0]["bbox"][:4] = bbox
 
         # test a single image, with a list of bboxes.
         if len(person_results) > 0:
@@ -189,6 +236,7 @@ def main():
             end = time.time()
 
             if args.kpt_median_filter:
+                
                 kpts = pose_results[0]["keypoints"]
                 kpts = kpt_median_filter_instance.update(kpts)
                 pose_results[0]["keypoints"][:, :2] = kpts
