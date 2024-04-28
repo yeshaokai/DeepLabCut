@@ -148,6 +148,7 @@ def imshow_keypoints(
         # draw each point on image
         if pose_kpt_color is not None:
 
+
             if not isinstance(pose_kpt_color, list):
                 pose_kpt_color = [pose_kpt_color] * len(pose_result)
 
@@ -173,6 +174,8 @@ def imshow_keypoints(
                             img_copy, transparency, img, 1 - transparency, 0, dst=img
                         )
                     else:
+
+                        #b, g, r = pose_kpt_color[i][kid]
                         r, g, b = pose_kpt_color[i][kid]
                         if not draw_gt:
 
@@ -189,7 +192,7 @@ def imshow_keypoints(
                             fontFace = cv2.FONT_HERSHEY_SIMPLEX
                             fontScale = 1
                             color = (0, 0, 255)  # Red color in BGR format
-                            thickness = 2
+                            thickness = thickness
                             lineType = cv2.LINE_AA
 
                             # Coordinates for the bottom-left corner of the text
@@ -224,7 +227,7 @@ def imshow_keypoints(
                     and kpts[sk[1], 2] > kpt_score_thr
                 ):
                     r, g, b = pose_link_color[sk_id]
-                    if show_keypoint_weight:
+                    if False: # show_keypoint_weight:
                         img_copy = img.copy()
                         X = (pos1[0], pos2[0])
                         Y = (pos1[1], pos2[1])
@@ -248,9 +251,8 @@ def imshow_keypoints(
                         cv2.addWeighted(
                             img_copy, transparency, img, 1 - transparency, 0, dst=img
                         )
-                    else:
-
-                        cv2.line(img, pos1, pos2, (int(r), int(g), int(b)), thickness=1)
+                    else:                        
+                        cv2.line(img, pos1, pos2, (int(r), int(g), int(b)), thickness=thickness)
 
     return img
 

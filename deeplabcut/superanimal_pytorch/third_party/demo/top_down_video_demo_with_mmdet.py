@@ -31,7 +31,7 @@ except (ImportError, ModuleNotFoundError) as e:
 import json
 
 
-class MedianFilter:
+class BboxMedianFilter:
     def __init__(self, window_size):
         self.window_size = window_size
         self.buffer = deque(maxlen=window_size)
@@ -44,7 +44,7 @@ class MedianFilter:
         # Transpose to get separate arrays of x1, y1, x2, y2
         transposed = np.transpose(self.buffer)
         # Compute median for each coordinate
-        return [np.median(coordinate) for coordinate in transposed]
+        return np.median(transposed, axis = 1)
 
 
 class KeypointsMedianFilter:
@@ -97,6 +97,7 @@ def main():
         help="whether to show visualizations.",
     )
     parser.add_argument("--kpt-median-filter", action="store_true", default=False)
+    parser.add_argument("--bbox-median-filter", action="store_true", default=False)    
     parser.add_argument(
         "--out-video-root",
         default="",
@@ -123,6 +124,10 @@ def main():
     parser.add_argument(
         "--thickness", type=int, default=3, help="Link thickness for visualization"
     )
+
+    parser.add_argument(
+        "--topk", type=int, default=30
+    )    
 
     assert has_mmdet, "Please install mmdet to run the demo."
 
@@ -192,9 +197,9 @@ def main():
 
     time_accumulated = 0
     frame_count = 0
-    window_size = 3
+    window_size = 7
 
-    median_filter_instance = MedianFilter(window_size)
+    bbox_median_filter_instance = BboxMedianFilter(60)
     kpt_median_filter_instance = KeypointsMedianFilter(39, window_size)
     
     import time
@@ -212,16 +217,22 @@ def main():
         
         # keep the person class bounding boxes.
         person_results = process_mmdet_results(mmdet_results, args.det_cat_id)
-        
-        if args.kpt_median_filter:
-            if len(person_results) > 0:
-                bbox = person_results[0]["bbox"][:4]
-                bbox = median_filter_instance.update(bbox)
-                person_results[0]["bbox"][:4] = bbox
 
+        person_results = sorted(person_results, key = lambda x:x['bbox'][-1])[::-1]
+        person_results = person_results[:args.topk]
+                        
+        
         # test a single image, with a list of bboxes.
         if len(person_results) > 0:
-        
+
+            if args.bbox_median_filter:
+
+                bbox = person_results[0]['bbox'][:-1]
+                print ('before update',bbox)                
+                bbox = bbox_median_filter_instance.update(np.array(bbox))
+                person_results[0]['bbox'][:-1] = bbox
+                print ('after update', bbox)
+            
             pose_results, returned_outputs = inference_top_down_pose_model(
                 pose_model,
                 img,
@@ -234,8 +245,10 @@ def main():
                 outputs=output_layer_names,
             )
             end = time.time()
-
+            print (pose_results)
             if args.kpt_median_filter:
+                # note this is for single animal only
+
                 
                 kpts = pose_results[0]["keypoints"]
                 kpts = kpt_median_filter_instance.update(kpts)

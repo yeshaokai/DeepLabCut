@@ -51,7 +51,7 @@ def video_to_frames(input_video, output_folder):
         frame_count += 1
     # Release the video object and close the window (if open)
     video.release()
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 
 
 categories = [

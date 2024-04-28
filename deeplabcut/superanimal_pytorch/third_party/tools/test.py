@@ -207,14 +207,13 @@ def main(args = None):
         # always save info str
         if isinstance(results, dict):
             mmcv.dump(results, os.path.join(cfg.work_dir, "info_str.json"))
-            print("results", results)
+
         if not args.skip_evaluation:
             if args.out:
                 print(f"\nwriting results to {args.out}")
                 # import pickle
                 # with open(args.out, 'wb') as f:
                 #    pickle.dump(results, f)
-                print("results", results)
                 mmcv.dump(results, args.out)
 
 

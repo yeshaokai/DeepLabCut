@@ -1,6 +1,3 @@
--rw-r--r--  1 root root      6266 Aug 21 10:54 det_config_SA_quadruped.py
-
-1;95;0c# _base_ = ['../../../../_base_/datasets/animalpose.py']
 log_level = "INFO"
 load_from = None
 resume_from = None

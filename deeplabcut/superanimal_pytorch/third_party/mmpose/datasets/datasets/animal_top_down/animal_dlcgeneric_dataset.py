@@ -463,7 +463,7 @@ class TopDownDLCGenericDataset(Kpt2dSviewRgbImgTopDownDataset):
         kpts = self._sort_and_unique_bboxes(kpts)
         num_predictions = 0
 
-        if domain_adaptation or memory_replay:
+        if memory_replay or domain_adaptation:
             for image_id in kpts:
                 _gts = gts[image_id]
                 _kpts = kpts[image_id]
