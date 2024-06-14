@@ -11,6 +11,7 @@ def main():
         bbox_threshold=0.9,
         detector_epochs=1,
         pose_epochs=1,
+        dest_folder = 'test_random_place'
     )
 
 
