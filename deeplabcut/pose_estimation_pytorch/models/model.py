@@ -208,7 +208,7 @@ class PoseModel(nn.Module):
             state_dict = snapshot["model"]
 
             # load backbone state dict
-            model.backbone.load_state_dict(filter_state_dict(state_dict, "backbone"))
+            model.backbone.load_state_dict(filter_state_dict(state_dict, "backbone"), strict=False)
 
             # if there's a neck, load state dict
             if model.neck is not None:

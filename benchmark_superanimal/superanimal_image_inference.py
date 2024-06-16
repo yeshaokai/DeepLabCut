@@ -20,12 +20,19 @@ if __name__ == "__main__":
     superanimal_name = "superanimal_quadruped"
     model_name = "hrnetw32"
     device = "cuda"
-    max_individuals = 3
+    max_individuals = 1
 
+    customized_pose_checkpoint = '/mediaPFM/data/datasets/final_datasets/DLCdev/benchmark/coco/pfm_pose_epoch_100_converted.pth'
+    customized_detector_checkpoint = '/mediaPFM/data/datasets/final_datasets/DLCdev/benchmark/coco/pfm_detector/train/snapshot-detector-010.pt'
+    customized_model_config='/mediaPFM/data/datasets/final_datasets/DLCdev/benchmark/coco/pfm_detector/train/pytorch_config.yaml'
+    
     ret = superanimal_analyze_images(
         superanimal_name,
         model_name,
-        "test_rodent_images",
+        "/mediaPFM/data/datasets/monkey_images",
         max_individuals,
-        "vis_test_rodent_images",
+        "/mediaPFM/data/datasets/out_monkey_images",
+        customized_pose_checkpoint = customized_pose_checkpoint,
+        customized_detector_checkpoint = customized_detector_checkpoint,
+        customized_model_config = customized_model_config        
     )

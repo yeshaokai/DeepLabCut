@@ -421,8 +421,15 @@ def dlc3predictions_2_annotation_from_video(
             }
         ]
 
-    else:
-        raise ValueError("not supporting non superanimal model video adaptation yet")
+    elif num_kpts == 37 and superanimal_name is not None:
+        categories = [
+            {
+                "name": "superprimate",
+                "id": 1,
+                "supercategory": "animal",
+                "keypoints": bodyparts,
+            }
+        ]
 
     assert len(predictions) == len(image_paths)
 

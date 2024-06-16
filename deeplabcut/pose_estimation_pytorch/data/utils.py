@@ -543,10 +543,11 @@ def _apply_transform(
         dict
             A dictionary containing the transformed image and keypoints.
     """
+
     transformed = transform(
         image=image,
         keypoints=keypoints,
-        class_labels=class_labels,
+        class_labels=class_labels[:len(keypoints)],
         bboxes=bboxes,
         bbox_labels=np.arange(len(bboxes)),
     )

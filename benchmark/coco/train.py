@@ -27,7 +27,7 @@ def main(
     detector_path: str | None,
     batch_size: int = 64,
     dataloader_workers: int = 12,
-    detector_batch_size: int = 64,
+    detector_batch_size: int = 16,
     detector_dataloader_workers: int = 12,
 ):
     log_path = Path(model_config_path).parent / "log.txt"
@@ -55,7 +55,7 @@ def main(
         ),
     )
 
-    det_cfg = loader.model_cfg("detector")
+    det_cfg = loader.model_cfg["detector"]
     if det_cfg is not None:
         if detector_epochs is None:
             detector_epochs = det_cfg["train_settings"]["epochs"]
@@ -72,6 +72,7 @@ def main(
 
     loader.update_model_cfg(updates)
 
+    print (loader.model_cfg)
     pose_task = Task(loader.model_cfg["method"])
     if pose_task == Task.TOP_DOWN:
         logger_config = None
