@@ -279,7 +279,7 @@ class BasePoseDataset:
             if "area" not in annotation:
                 annotation["area"] = area
 
-    def project_with_conversion_table(self, table_path="", table_dict=None):
+    def project_with_conversion_table(self, table_path="", table_dict=None, adjust_bbox_and_area = False):
         """
         Replace the generic annotations with those that are in superset keypoint space
 
@@ -308,7 +308,8 @@ class BasePoseDataset:
         for img in self.generic_train_images + self.generic_test_images:
             img["source_dataset"] = self.meta["dataset_name"]
 
-        self.adjust_bbox_and_area()
+        if adjust_bbox_and_area:
+            self.adjust_bbox_and_area()
         self.meta["categories"]["keypoints"] = self.conversion_table.master_keypoints
         self.meta["categories"]["supercategory"] = "animal"
         self.meta["categories"]["name"] = "superanimal"
