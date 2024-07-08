@@ -60,6 +60,7 @@ def _video_inference_superanimal(
     customized_pose_checkpoint: Optional[str] = None,
     customized_detector_checkpoint: Optional[str] = None,
     customized_model_config: Optional[str] = None,
+    phase = ''
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -170,9 +171,9 @@ def _video_inference_superanimal(
             customized_pose_checkpoint is None
             and customized_detector_checkpoint is None
         ):
-            output_json = str(output_h5).replace(".h5", "_before_adapt.json")
+            output_json = str(output_h5).replace(".h5", f"_{phase}.json")
         else:
-            output_json = str(output_h5).replace(".h5", "_after_adapt.json")
+            output_json = str(output_h5).replace(".h5", f"_{phase}.json")
         # also output json file so it's easier for video adaptation to handle
 
         predictions, video_metadata = video_inference(
@@ -209,9 +210,9 @@ def _video_inference_superanimal(
             and customized_detector_checkpoint is not None
         ):
             # FIXME: customized pose and customized detector passed does not mean it's adapted anymore
-            output_video = output_path / f"{output_prefix}_labeled_after_adapt.mp4"
+            output_video = output_path / f"{output_prefix}_labeled_{phase}.mp4"
         else:
-            output_video = output_path / f"{output_prefix}_labeled.mp4"
+            output_video = output_path / f"{output_prefix}_labeled_{phase}.mp4"
 
         superanimal_colormaps = get_superanimal_colormaps()
         colormap = superanimal_colormaps[project_name]

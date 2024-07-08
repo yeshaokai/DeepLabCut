@@ -73,6 +73,8 @@ def adaptation_train(
 
     loader.update_model_cfg(updates)
 
+
+    
     pose_task = Task(loader.model_cfg["method"])
     if pose_task == Task.TOP_DOWN:
         logger_config = None

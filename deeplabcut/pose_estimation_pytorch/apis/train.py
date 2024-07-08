@@ -53,6 +53,8 @@ def train(
     transform: A.BaseCompose | None = None,
     inference_transform: A.BaseCompose | None = None,
     max_snapshots_to_keep: int | None = None,
+    rank = None,
+    world_size = None
 ) -> None:
     """Builds a model from a configuration and fits it to a dataset
 
@@ -186,11 +188,13 @@ def train(
     else:
         logging.info("\nStarting pose model training...\n" + (50 * "-"))
 
-    runner.fit(
+    runner.fit(        
         train_dataloader,
         valid_dataloader,
         epochs=run_config["train_settings"]["epochs"],
         display_iters=run_config["train_settings"]["display_iters"],
+        rank = rank,
+        world_size = world_size
     )
 
 

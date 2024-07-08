@@ -30,6 +30,7 @@ from deeplabcut.utils.pseudo_label import (
     dlc3predictions_2_annotation_from_video,
     video_to_frames,
 )
+from deeplabcut.utils.auxiliaryfunctions import read_config
 
 
 def video_inference_superanimal(
@@ -282,28 +283,49 @@ def video_inference_superanimal(
             video_path = Path(videos[0])
             print(f"using {video_path} for video adaptation training")
 
-            # video inference to get pseudo label
-            _video_inference_superanimal(
-                [str(video_path)],
-                project_name,
-                model_name,
-                max_individuals,
-                pcutoff,
-                device=device,
-                dest_folder=dest_folder,
-                customized_pose_checkpoint=customized_pose_checkpoint,
-                customized_detector_checkpoint=customized_detector_checkpoint,
-                customized_model_config=customized_model_config,
-            )
+            # check if the before adaptaion labeled video already exists
+            if dest_folder is None:
+                pseudo_anno_dir = video_path.parent
+            else:
+                pseudo_anno_dir = Path(dest_folder)
+            dlc_scorer = f"{project_name}_{model_name}"
+            
+            pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
+            pseudo_anno_path = pseudo_anno_dir / pseudo_anno_name            
+            
+            # not to repeat video inference if the pseudo anno exists already
 
-            (
-                model_config,
-                project_config,
-                pose_model_path,
-                detector_path,
-            ) = get_config_model_paths(project_name, model_name)
-            config = {**project_config, **model_config}
-            config = update_config(config, max_individuals, device)
+            if not pseudo_anno_path.exists():
+
+                # video inference to get pseudo label
+                _video_inference_superanimal(
+                    [str(video_path)],
+                    project_name,
+                    model_name,
+                    max_individuals,
+                    pcutoff,
+                    device=device,
+                    dest_folder=dest_folder,
+                    customized_pose_checkpoint=customized_pose_checkpoint,
+                    customized_detector_checkpoint=customized_detector_checkpoint,
+                    customized_model_config=customized_model_config,
+                    phase = 'before_adapt'
+                )
+            else:
+                print (f'{pseudo_anno_path} exists. Skipping the before adaptation video inference')
+
+
+            if customized_model_config is None:
+                (
+                    model_config,
+                    project_config,
+                    pose_model_path,
+                    detector_path,
+                ) = get_config_model_paths(project_name, model_name)
+                config = {**project_config, **model_config}
+                config = update_config(config, max_individuals, device)
+            else:
+                config = read_config(customized_model_config)
 
             # we need config to fetch the correct keypoints to dlc3predictions_2_annotation_from_video
             bodyparts = config["metadata"]["bodyparts"]
@@ -332,13 +354,7 @@ def video_inference_superanimal(
             else:
                 anno_folder.mkdir()
 
-                if dest_folder is None:
-                    pseudo_anno_dir = video_path.parent
-                else:
-                    pseudo_anno_dir = Path(dest_folder)
-                dlc_scorer = f"{project_name}_{model_name}"
-                pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
-                with open(pseudo_anno_dir / pseudo_anno_name, "r") as f:
+                with open(pseudo_anno_path, "r") as f:
                     predictions = json.load(f)
 
                 # make sure we tune parameters inside this function such as pseudo
@@ -402,6 +418,11 @@ video adaptation batch size: {video_adapt_batch_size}"""
                         )
                         return
 
+                if customized_pose_checkpoint is not None:
+                    pose_model_path = customized_pose_checkpoint
+                if customized_detector_checkpoint is not None:
+                    detector_path = customized_detector_checkpoint
+                    
                 adaptation_train(
                     project_root=pseudo_dataset_folder,
                     model_folder=model_folder,
@@ -434,4 +455,5 @@ video adaptation batch size: {video_adapt_batch_size}"""
             customized_pose_checkpoint=customized_pose_checkpoint,
             customized_detector_checkpoint=customized_detector_checkpoint,
             customized_model_config=customized_model_config,
+            phase = 'before_adapt' if video_adapt is False else 'after_adapt'
         )

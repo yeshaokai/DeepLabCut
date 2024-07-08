@@ -21,6 +21,9 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.nn.parallel import DataParallel
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+
 
 from deeplabcut.pose_estimation_pytorch.metrics import compute_bbox_metrics
 from deeplabcut.pose_estimation_pytorch.metrics.scoring import (
@@ -138,6 +141,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         valid_loader: DataLoader,
         epochs: int,
         display_iters: int,
+            rank = None,
+            world_size = None
     ) -> None:
         """Train model for the specified number of steps.
 
@@ -153,7 +158,17 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
            runner.fit(train_loader, valid_loader, "example/models" epochs=50)
         """
         if self.gpus:
-            self.model = DataParallel(self.model, device_ids=self.gpus).cuda()
+            
+            #self.model = DataParallel(self.model, device_ids=self.gpus).cuda()
+            if rank is None:
+                rank = int(os.getenv('RANK', '0'))
+            if world_size is None:
+                world_size = int(os.getenv('WORLD_SIZE', '1'))
+
+            dist.init_process_group("nccl", rank=rank, world_size=world_size)
+            torch.cuda.set_device(rank)
+            self.model = self.model.to(rank)
+            self.model = DDP(self.model, device_ids = [rank])
         else:
             self.model.to(self.device)
 

@@ -64,8 +64,9 @@ class Runner(ABC, Generic[ModelType]):
             the number of epochs the model was trained for
         """
         snapshot = torch.load(snapshot_path, map_location=device)
-        model.load_state_dict(snapshot['model'])
+        model.load_state_dict(snapshot['model'], strict = False)
         if optimizer is not None and 'optimizer' in snapshot:
             optimizer.load_state_dict(snapshot["optimizer"])
 
-        return snapshot.get("metadata", {}).get("epoch", 0)
+        #return snapshot.get("metadata", {}).get("epoch", 0)
+        return 0
