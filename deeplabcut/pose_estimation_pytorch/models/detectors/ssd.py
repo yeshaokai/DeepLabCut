@@ -10,6 +10,8 @@
 #
 from __future__ import annotations
 
+import torchvision.models.detection as detection
+
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import DETECTORS
 from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import (
     TorchvisionDetectorAdaptor,
@@ -25,11 +27,12 @@ class SSDLite(TorchvisionDetectorAdaptor):
         freeze_bn_stats: bool = False,
         freeze_bn_weights: bool = False,
         pretrained: bool = False,
+        pretrained_from_imagenet: bool = False,
         box_score_thresh: float = 0.01,
     ) -> None:
-        model_kwargs = None
-        if pretrained:
-            model_kwargs = dict(weights_backbone="IMAGENET1K_V2")
+        model_kwargs = dict(weights_backbone=None)
+        if pretrained_from_imagenet:
+            model_kwargs["weights_backbone"] = "IMAGENET1K_V2"
 
         super().__init__(
             model="ssdlite320_mobilenet_v3_large",
@@ -40,3 +43,22 @@ class SSDLite(TorchvisionDetectorAdaptor):
             box_score_thresh=box_score_thresh,
             model_kwargs=model_kwargs,
         )
+
+        if pretrained and not pretrained_from_imagenet:
+            weights = detection.SSDLite320_MobileNet_V3_Large_Weights.verify("COCO_V1")
+            state_dict = weights.get_state_dict(progress=False, check_hash=True)
+            for k, v in state_dict.items():
+                key_parts = k.split(".")
+                if (
+                    len(key_parts) == 6
+                    and key_parts[0] == "head"
+                    and key_parts[1] == "classification_head"
+                    and key_parts[2] == "module_list"
+                    and key_parts[4] == "1"
+                    and key_parts[5] in ("weight", "bias")
+                ):
+                    all_classes_size = v.shape[0]
+                    two_classes_size = 2 * (all_classes_size // 91)
+                    state_dict[k] = v[:two_classes_size]
+
+            self.model.load_state_dict(state_dict)
