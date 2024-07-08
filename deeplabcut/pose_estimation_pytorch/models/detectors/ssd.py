@@ -57,6 +57,12 @@ class SSDLite(TorchvisionDetectorAdaptor):
                     and key_parts[4] == "1"
                     and key_parts[5] in ("weight", "bias")
                 ):
+                    # number of COCO classes: 90 + background (91)
+                    # number of DLC classes: 1 + background (2)
+                    # -> only keep weights for the background + first class
+
+                    # future improvement: find best-suited class for the project
+                    #   and use those weights, instead of naively taking the first
                     all_classes_size = v.shape[0]
                     two_classes_size = 2 * (all_classes_size // 91)
                     state_dict[k] = v[:two_classes_size]
