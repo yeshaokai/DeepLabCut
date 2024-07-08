@@ -30,7 +30,7 @@ heatmap_config:
     kernel_size: 1
 locref_config:
   channels:
-    - "backbone_output_channels"
+  - "backbone_output_channels"
   kernel_size: []
   strides: []
   final_conv:
