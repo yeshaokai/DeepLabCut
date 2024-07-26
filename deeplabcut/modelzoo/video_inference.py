@@ -375,6 +375,7 @@ def video_inference_superanimal(
 
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
+
             with open(model_config_path, "w") as f:
                 yaml = YAML()
                 yaml.dump(config, f)
@@ -422,7 +423,7 @@ video adaptation batch size: {video_adapt_batch_size}"""
                     pose_model_path = customized_pose_checkpoint
                 if customized_detector_checkpoint is not None:
                     detector_path = customized_detector_checkpoint
-                    
+                
                 adaptation_train(
                     project_root=pseudo_dataset_folder,
                     model_folder=model_folder,

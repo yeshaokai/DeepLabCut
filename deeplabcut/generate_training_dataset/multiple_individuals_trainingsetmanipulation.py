@@ -107,6 +107,7 @@ def create_multianimaltraining_dataset(
     Shuffles=None,
     windows2linux=False,
     net_type=None,
+    detector_type=None,
     numdigits=2,
     crop_size=(400, 400),
     crop_sampling="hybrid",
@@ -155,8 +156,8 @@ def create_multianimaltraining_dataset(
                 * ``efficientnet-b4``
                 * ``efficientnet-b5``
                 * ``efficientnet-b6``
-            PyTorch (call ``deeplabcut.pose_estimation.available_models()`` for a
-            complete list)
+            PyTorch (call ``deeplabcut.pose_estimation_pytorch.available_models()`` for
+            a complete list)
                 * ``resnet_50``
                 * ``resnet_101``
                 * ``dekr_w18``
@@ -168,6 +169,16 @@ def create_multianimaltraining_dataset(
                 * ``top_down_hrnet_w32``
                 * ``top_down_hrnet_w48``
                 * ``animaltokenpose_base``
+
+    detector_type: string, optional, default=None
+        Only for the PyTorch engine.
+        When passing creating shuffles for top-down models, you can specify which
+        detector you want. If the detector_type is None, the ```ssdlite``` will be used.
+        The list of all available detectors can be obtained by calling
+        ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported options:
+            * ``ssdlite``
+            * ``fasterrcnn_mobilenet_v3_large_fpn``
+            * ``fasterrcnn_resnet50_fpn_v2``
 
     numdigits: int, optional
 
@@ -569,6 +580,10 @@ def create_multianimaltraining_dataset(
                 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import make_pytorch_pose_config
                 from deeplabcut.pose_estimation_pytorch.modelzoo.config import make_super_animal_finetune_config
 
+                # backwards compatibility with version 2.X
+                if net_type == "dlcrnet_ms5":
+                    net_type = "dlcrnet_stride16_ms5"
+
                 pose_cfg_path = path_train_config.replace("pose_cfg.yaml", "pytorch_config.yaml")
                 if weight_init is not None and weight_init.with_decoder:
                     pytorch_cfg = make_super_animal_finetune_config(
@@ -583,6 +598,7 @@ def create_multianimaltraining_dataset(
                         pose_config_path=path_train_config,
                         net_type=net_type,
                         top_down=top_down,
+                        detector_type=detector_type,
                         weight_init=weight_init,
                     )
 

@@ -7,8 +7,7 @@ identity:
 
 
 # Project path (change when moving around)
-project_path: 
-  /mediaPFM/data/datasets/final_datasets/DLCdev/deeplabcut/modelzoo/project_configs
+project_path: /mnt/md0/shaokai/DeepLabCut/deeplabcut/modelzoo/project_configs
 
 
 # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
@@ -57,6 +56,9 @@ bodyparts:
 - belly_bottom
 - body_middle_right
 - body_middle_left
+
+
+# Fraction of video to start/stop when extracting frames for labeling/refinement
 
 
 # Fraction of video to start/stop when extracting frames for labeling/refinement
