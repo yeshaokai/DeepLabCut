@@ -281,11 +281,8 @@ class BasePoseDataset:
             h = ymax - ymin
             area = w * h
             bbox = np.nan_to_num([xmin, ymin, w, h])
-
-            if "bbox" not in annotation:
-                annotation["bbox"] = bbox
-            if "area" not in annotation:
-                annotation["area"] = area
+            annotation["bbox"] = bbox
+            annotation["area"] = area
 
     def project_with_conversion_table(self, table_path="", table_dict=None, adjust_bbox_and_area = False):
         """
@@ -315,6 +312,7 @@ class BasePoseDataset:
 
         for img in self.generic_train_images + self.generic_test_images:
             img["source_dataset"] = self.meta["dataset_name"]
+
 
         if adjust_bbox_and_area:
             self.adjust_bbox_and_area()

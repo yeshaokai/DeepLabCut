@@ -25,7 +25,7 @@ class MultiSourceDataset:
 
     """
 
-    def __init__(self, dataset_name, datasets, table_path):
+    def __init__(self, dataset_name, datasets, table_path, adjust_bbox_and_area = False):
         self.datasets = datasets
         #
         self.name2genericdataset = {}
@@ -41,8 +41,9 @@ class MultiSourceDataset:
         for dataset in datasets:
 
             # Must project datasets to same keypoint space before merging
+            
             if table_path != None:
-                dataset.project_with_conversion_table(table_path)
+                dataset.project_with_conversion_table(table_path, adjust_bbox_and_area = adjust_bbox_and_area)
             name = dataset.meta["dataset_name"]
             names.append(name)
             self.name2genericdataset[name] = dataset

@@ -163,6 +163,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
             model: The detector to use for inference.
             **kwargs: Inference runner kwargs.
         """
+
         super().__init__(model, **kwargs)
 
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
